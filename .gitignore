@@ -1,0 +1,47 @@
+# 非公開：氏名対応表・PII索引。バージョン管理・共有の対象外
+private/
+# 派生音声（大容量）
+derived/transcription/audio/*.wav
+# 照合用の音声クリップ（参加者の生の声。最も識別性が高い）
+derived/transcription/diarization/clips/*.wav
+# 話者分離モデル本体（Hugging Face から取得。再取得可能）
+models/
+# 話者分離用の仮想環境
+.venv-diarization/
+
+# 絶対非公開：一次・派生データ、裁定台帳、音声・文字起こし・ASR成果物
+/sources/
+/private/
+/derived/
+/models/
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.mp4
+*.mov
+*.srt
+*.rttm
+*.csv
+*.tsv
+*.txt
+*.xlsx
+*.xls
+*.parquet
+*.sqlite
+*.db
+*.json
+
+# 実行環境・機械生成物・認証情報
+__pycache__/
+*.pyc
+*.log
+/logs/
+/cache/
+/.cache/
+.venv/
+.venv*/
+.env
+.env.*
+*.env
+.DS_Store
