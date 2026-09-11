@@ -83,7 +83,7 @@ button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px 
 .legend button.selected::after{content:" ✓"}
 .key{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 .stack{height:24px;border-radius:99px;display:flex;overflow:hidden;background:#e8edf0}
-.stack div{min-width:5px;transition:width .4s ease}
+.stack div{transition:width .4s ease}
 
 .topics{margin-top:18px}
 .section-head{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}

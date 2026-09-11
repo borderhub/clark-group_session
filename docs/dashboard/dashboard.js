@@ -1,7 +1,9 @@
 (() => {
 'use strict';
-/* v2.2：確度切替を廃止。全ビューを「AI暫定値を含む」固定条件で描画する。
-   人間確認済み／AI暫定／未解決／非適用／除外の状態区分は不確実性ビューにのみ残す。 */
+/* v2.3：チーム確認期間限定の方針として、画面に出る集計はすべて実数表示にする。
+   件数の丸めや伏せ字は行わず、棒幅・ドーナツ比率も実数に対応させる。
+   0 件の項目は一覧・凡例に出さない（データ生成側で除外済み）。
+   要配慮話題は抽象ラベルと件数のみを表示し、詳細化しない。 */
 const D = window.DASHBOARD_DATA;
 const EVIDENCE = 'ai';
 const EVIDENCE_TEXT = 'AI暫定値を含む';
@@ -105,8 +107,9 @@ function renderCompare() {
   target.append(head);
 
   labels.forEach(label => {
-    const g = a.find(x => x.label === label) || { display:'≤4', weight:4 };
-    const bb = b.find(x => x.label === label) || { display:'≤4', weight:4 };
+    // 片方のセッションに出現しないテーマは実数 0 として表示する（丸めない）
+    const g = a.find(x => x.label === label) || { display:'0', weight:0 };
+    const bb = b.find(x => x.label === label) || { display:'0', weight:0 };
     const row = el('div', { class:'bar-row', role:'button', tabindex:'0',
       'aria-label':`${label}　セッションG ${g.display}、セッションB ${bb.display}${state.theme === label ? '（選択中）' : ''}` });
     if (state.theme === label) row.classList.add('selected');
@@ -117,7 +120,8 @@ function renderCompare() {
       line.append(el('i', { 'aria-hidden':'true' }, tag));
       const track = el('div', { class:'bar-track' });
       const bar = el('div', { class:`bar ${cls}` });
-      bar.dataset.w = Math.max(6, Math.round(x.weight / max * 100));
+      // 棒幅は実数比にそのまま対応させる（最小幅による底上げをしない）
+      bar.dataset.w = (x.weight / max * 100).toFixed(3);
       track.append(bar); line.append(track); group.append(line);
     });
     row.append(group, el('b', { class:'bar-value' }, `G ${g.display} / B ${bb.display}`));
@@ -167,7 +171,7 @@ function renderStatus() {
   clear(stack); clear(legend);
   const total = rows.reduce((s, r) => s + r.weight, 0);
   rows.forEach((r, i) => {
-    stack.append(el('div', { style:`width:${Math.max(4, r.weight / total * 100)}%;background:${colors[i % colors.length]}`,
+    stack.append(el('div', { style:`width:${(r.weight / total * 100).toFixed(3)}%;background:${colors[i % colors.length]}`,
       role:'img', 'aria-label':`${r.label} ${r.display}` }));
     const l = el('span', {}, `${r.label} ${r.display}`);
     l.prepend(el('i', { class:'key', style:`background:${colors[i % colors.length]}`, 'aria-hidden':'true' }));
