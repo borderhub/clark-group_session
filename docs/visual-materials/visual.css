@@ -1,0 +1,75 @@
+:root{--ink:#17202b;--muted:#556274;--line:#dfe5ea;--bg:#f4f6f8;--panel:#fff;
+  --blue:#245a85;--accent:#177d7b;--warn:#8a6d1f;--warnbg:#fdf6e4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.7 "Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:32px 20px 64px}
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:8px;top:8px;position:fixed;z-index:60;background:#fff;padding:10px 14px;
+  border:2px solid var(--blue);border-radius:8px}
+header{margin-bottom:18px}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.14em;color:var(--accent);font-weight:700}
+h1{margin:6px 0 6px;font-size:27px;line-height:1.35}
+h2{font-size:17px;margin:0 0 6px}
+.sub,.small{color:var(--muted);font-size:13px;margin:0 0 4px}
+.standing-notice{background:var(--warnbg);border-left:4px solid var(--warn);
+  padding:14px 16px;border-radius:0 10px 10px 0;font-size:14px;margin:0 0 22px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:20px 22px;margin-bottom:20px}
+.controls{display:flex;flex-wrap:wrap;align-items:end;gap:18px;margin-bottom:16px}
+.controls h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.segmented{display:flex;flex-wrap:wrap;gap:6px}
+.segmented button{font:inherit;border:1px solid var(--line);border-radius:8px;background:#fff;
+  color:var(--ink);padding:8px 14px;cursor:pointer}
+.segmented button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
+.segmented button[aria-pressed=true]::before{content:"● ";font-size:10px}
+.segmented button:hover{border-color:var(--blue)}
+.condition{font-weight:700;font-size:14px;margin:0}
+.tallies{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:12px}
+.tally h3{font-size:13px;margin:0 0 8px;color:var(--muted);font-weight:700}
+.tally ul{list-style:none;margin:0;padding:0}
+.tally li{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:14px}
+.tally .bar{flex:0 0 auto;height:9px;border-radius:99px;background:var(--blue);min-width:4px}
+.tally .n{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:14px}
+.card{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;
+  padding:0;cursor:zoom-in;font:inherit;text-align:left;color:inherit}
+.card:hover,.card:focus-visible{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px #245a8522}
+.card img{display:block;width:100%;height:210px;object-fit:cover;background:#eef2f5}
+.card .meta{padding:10px 12px;font-size:12px;color:var(--muted);display:grid;gap:2px}
+.card .meta b{color:var(--ink);font-size:13px}
+.tag{display:inline-block;font-size:11px;background:#eef4f4;color:#175f5d;
+  border-radius:99px;padding:2px 8px;margin-top:4px}
+.scope-list{margin:10px 0 12px;padding-left:1.15em;font-size:14px}
+.scope-list li{margin:4px 0}
+.link-out{color:var(--blue);font-weight:700}
+.redaction-note{color:var(--warn)}
+footer{margin-top:8px}
+.lightbox{position:fixed;inset:0;z-index:50;background:#0f141ae6;display:grid;
+  grid-template-rows:1fr auto;place-items:center;padding:52px 16px 20px}
+/* hidden 属性を確実に効かせる（.lightbox の display 指定が UA の [hidden] を上書きするため） */
+.lightbox[hidden]{display:none}
+.lightbox img{max-width:min(96vw,1100px);max-height:78vh;object-fit:contain;
+  background:#fff;border-radius:8px}
+.lb-caption{color:#e9eef3;font-size:13px;text-align:center;margin:12px 0 0;max-width:760px}
+.lb-close,.lb-nav{position:absolute;background:#ffffff1f;color:#fff;border:1px solid #ffffff45;
+  border-radius:10px;cursor:pointer;font-size:22px;line-height:1;padding:8px 13px}
+.lb-close{top:12px;right:12px}
+.lb-nav{top:50%;transform:translateY(-50%)}
+.lb-prev{left:12px}.lb-next{right:12px}
+.lb-close:hover,.lb-nav:hover{background:#ffffff33}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.lightbox :focus-visible{outline-color:#fff}
+@media(max-width:720px){
+  main{padding:24px 14px 48px}
+  h1{font-size:22px}
+  .gallery{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .card img{height:150px}
+  .tallies{grid-template-columns:1fr}
+  .lightbox{padding:56px 10px 16px}
+  .lb-nav{padding:6px 10px;font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;
+    scroll-behavior:auto!important}
+}

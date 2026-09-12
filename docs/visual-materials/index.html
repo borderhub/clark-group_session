@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>視覚資料アーカイブ</title>
+<link rel="stylesheet" href="visual.css">
+</head>
+<body>
+<a class="skip" href="#gallery">ギャラリーへ移動</a>
+<main>
+  <header>
+    <p class="eyebrow">TEAM REVIEW · PROVISIONAL</p>
+    <h1>今回の2セッションの視覚資料</h1>
+    <p class="sub">グループディスカッション中に制作された視覚資料を、作成者を特定せず記録・閲覧するためのページです。</p>
+  </header>
+
+  <p class="standing-notice">
+    このページは、今回の2セッションで制作された視覚資料を、作成者を特定せずグループ単位で記録・閲覧するためのものです。
+    表現は心理状態や性格を示すものとして扱わず、会話との関係も因果関係として解釈しません。
+  </p>
+
+  <section class="controls" aria-label="表示条件">
+    <div>
+      <h2 id="lblGroup">表示</h2>
+      <div class="segmented" role="group" aria-labelledby="lblGroup">
+        <button type="button" data-view="all" aria-pressed="true">統合</button>
+        <button type="button" data-view="G" aria-pressed="false">セッションG</button>
+        <button type="button" data-view="B" aria-pressed="false">セッションB</button>
+      </div>
+    </div>
+    <p id="condition" class="condition"></p>
+  </section>
+
+  <section class="panel" aria-label="集計">
+    <h2>表現形式・構成の件数</h2>
+    <p class="small">今回のセッションで制作された資料に観察された、造形上の特徴の件数です。作品の質や作成者の状態を示すものではありません。</p>
+    <div id="tallies" class="tallies" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2 id="galleryHead">視覚資料</h2>
+    <p class="small">画像を選ぶと拡大表示します。作品ごとの作成者名・個別の解説・個別の解釈は表示していません。</p>
+    <p class="small redaction-note">うち1点は、紙面に書き込まれていた氏名の部分のみを不可視化しています。それ以外の加工は行っていません。</p>
+    <div id="gallery" class="gallery" tabindex="-1" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2>会話データとの接続範囲</h2>
+    <p>視覚資料と会話データは、<strong>セッション単位でのみ</strong>照らし合わせています。個々の作品を特定の発言・発言者に結びつけることはしていません。</p>
+    <ul class="scope-list">
+      <li><b>できること</b>：同じセッションで、会話でも扱われた主題が視覚資料にも併存して観察された可能性を示すこと。</li>
+      <li><b>していないこと</b>：作品と作成者の対応づけ、作品と特定の発言の対応づけ、因果関係の主張。</li>
+      <li><b>扱わないこと</b>：心理状態、性格、発達、能力の評価。性別による一般化。GとBの優劣比較。</li>
+    </ul>
+    <p class="small">G・Bは今回の2セッションを区別するための呼称であり、集団の属性を表すものではありません。参加者は各セッション7名の小さな標本で、結果を一般化することはできません。</p>
+    <p><a class="link-out" href="../dashboard/">会話データのダッシュボードを開く</a></p>
+  </section>
+
+  <footer>
+    <p class="small">本ページはAI補助による暫定的・記述的な整理であり、人間の確認を経ていない項目を含みます。確定的な結論ではありません。</p>
+  </footer>
+</main>
+
+<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="拡大表示">
+  <button type="button" id="lbClose" class="lb-close" aria-label="閉じる">×</button>
+  <button type="button" id="lbPrev" class="lb-nav lb-prev" aria-label="前の資料">‹</button>
+  <img id="lbImg" alt="">
+  <button type="button" id="lbNext" class="lb-nav lb-next" aria-label="次の資料">›</button>
+  <p id="lbCaption" class="lb-caption"></p>
+</div>
+
+<script src="visual_data.js"></script>
+<script src="visual.js"></script>
+</body>
+</html>
