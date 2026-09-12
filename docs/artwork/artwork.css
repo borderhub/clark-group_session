@@ -67,7 +67,13 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:99px;
   border-top:1px solid var(--line);padding-top:8px;flex:0 0 auto;
   max-height:170px;overflow:auto}
 :focus-visible{outline:3px solid var(--sel);outline-offset:2px}
-@media(max-width:860px){
+
+/* ---- 769px以上：追加要素を出さず、既存のサイドバー構成をそのまま使う ---- */
+.tabpanel{display:contents}
+.narrow-only{display:none}
+.grab,.tabs,.state-short,.foot{display:none}
+#restoreSlot{display:none}
+@media(min-width:769px) and (max-width:860px){
   /* 狭い画面ではサイドバーが画面を占有するため、下部シートに戻す */
   .panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;padding:10px 12px 12px;max-height:58dvh}
   .rows{gap:12px}
@@ -77,7 +83,166 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:99px;
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 
+
+
+/* ================= 狭い画面／低い画面：下部シート =================
+   横向きのスマートフォン（例 844x390）も対象にする。
+   デスクトップの広い画面は対象外。 */
+@media(max-width:768px),(max-height:540px) and (max-width:1024px){
+  :root{--sheet-pad:12px;--safe-b:env(safe-area-inset-bottom,0px)}
+
+  /* 背後の Canvas は常に全画面のまま描画を続ける */
+  .panel{
+    top:auto; left:0; right:0; bottom:0; width:auto; max-height:none;
+    border-radius:16px 16px 0 0; border-left:0; border-right:0; border-bottom:0;
+    opacity:1;                                  /* 触れなくても読めるようにする */
+    padding:0 var(--sheet-pad) calc(var(--sheet-pad) + var(--safe-b));
+    height:var(--sheet-h,48dvh);
+    transition:height .22s ease;
+    overscroll-behavior:contain;
+  }
+  body.sheet-collapsed .panel{height:auto}
+  /* 通常時は48dvh。画面が低い端末でも操作が1段は見えるよう下限を置く */
+  body.sheet-normal    .panel{--sheet-h:min(82dvh,max(48dvh,330px))}
+  body.sheet-full      .panel{--sheet-h:82dvh}
+  body.sheet-dragging  .panel{transition:none}
+
+  /* ---- ハンドル：折りたたみ時はこれと状態要約だけを見せる ---- */
+  .grab{
+    display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px;
+    width:calc(100% + var(--sheet-pad)*2); margin:0 calc(var(--sheet-pad)*-1);
+    padding:8px var(--sheet-pad) 6px; min-height:44px;
+    background:transparent; border:0; color:var(--ink);
+    font:inherit; text-align:left; cursor:pointer; touch-action:none;
+  }
+  .grab-bar{
+    grid-column:1 / -1; justify-self:center;
+    width:42px; height:4px; border-radius:99px; background:#3c4a5c; margin-bottom:5px;
+  }
+  .grab-sum{font-size:12.5px; color:var(--ink); line-height:1.35;
+    overflow:hidden; text-overflow:ellipsis; display:-webkit-box;
+    -webkit-line-clamp:2; -webkit-box-orient:vertical}
+  .grab-arrow{grid-column:2; font-size:11px; color:var(--muted); transition:transform .2s ease}
+  body.sheet-full .grab-arrow{transform:rotate(180deg)}
+  /* 展開中はつまみだけにして、操作欄の高さを稼ぐ */
+  body:not(.sheet-collapsed) .grab{min-height:44px; padding:4px var(--sheet-pad); align-content:center}
+  body:not(.sheet-collapsed) .grab-sum{display:none}
+  body:not(.sheet-collapsed) .grab-bar{margin-bottom:0}
+
+  /* 折りたたみ時に隠すもの */
+  body.sheet-collapsed .panel-head,
+  body.sheet-collapsed .tabs,
+  body.sheet-collapsed .rows,
+  body.sheet-collapsed .state-short,
+  body.sheet-collapsed .state,
+  body.sheet-collapsed .foot{display:none}
+
+  .panel-head{display:none}
+  #restoreSlot button{min-height:44px;width:100%}
+
+  /* ---- タブ ---- */
+  .tabs{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; flex:0 0 auto; margin:2px 0 8px}
+  .tab{min-height:44px; padding:9px 8px; font-size:13.5px; font-weight:700;
+    background:#18222f; color:var(--muted); border:1px solid var(--line);
+    border-radius:10px; cursor:pointer}
+  .tab[aria-selected=true]{background:var(--sel); border-color:var(--sel); color:#fff}
+  .tab[aria-selected=true]::before{content:"● "; font-size:9px}
+
+  /* ---- スクロールするのは現在のタブの中身だけ ---- */
+  .tabpanel{display:block; min-width:0}
+  /* 「参照中」は下部の状態要約と同じ内容なので、操作領域を空けるため出さない */
+  #tp-theme > .row:first-child{display:none}
+  .tabpanel[hidden]{display:none}
+  .rows{gap:0; padding-right:0; -webkit-overflow-scrolling:touch; overscroll-behavior:contain}
+  .row{margin-bottom:12px}
+  .row:last-child{margin-bottom:0}
+  .panel h2{font-size:11px; margin-bottom:6px}
+  /* タブ見出しと重複する小見出しは、読み上げ用に残して視覚的にだけ省く */
+  #lblTheme,#lblPick{position:absolute; width:1px; height:1px; margin:-1px;
+    padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+  .hint{font-size:10.5px; margin-bottom:6px}
+  /* 狭い画面では短い説明に差し替える。全文は「作品について」にある */
+  .wide-only{display:none}
+  .narrow-only{display:inline}
+  p.hint.wide-only{display:none}
+
+  /* 二重スクロールを作らない */
+  .themes{max-height:none; overflow:visible; gap:6px}
+  .themes button{min-height:44px; padding:10px 12px; font-size:14px}
+
+  /* ---- タッチ対象 ---- */
+  .bulk{grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px}
+  .bulk button{min-height:44px; font-size:13px}
+  .segmented{gap:6px}
+  .segmented button{min-height:44px; min-width:44px; flex:1 1 auto; padding:10px 8px; font-size:14px}
+  .picks{grid-template-columns:1fr; gap:6px}
+  .pick{min-height:44px; padding:9px 12px; font-size:14px; gap:10px}
+  .pick input{width:22px; height:22px}
+  .pick .sw{width:11px; height:11px}
+  .pick:has(input:checked){border-color:var(--sel); border-width:2px; padding:8px 11px}
+  .pick:has(input:checked) span{font-weight:700}
+  /* スライダーの操作域を縦44px以上にする */
+  input[type=range]{height:44px}
+  input[type=range]::-webkit-slider-thumb{width:22px; height:22px; margin-top:-9px}
+  input[type=range]::-moz-range-thumb{width:20px; height:20px}
+
+  /* ---- 状態表示 ---- */
+  .state-short{display:block; flex:0 0 auto; margin:0; padding:7px 0 0;
+    border-top:1px solid var(--line); font-size:12px; color:var(--ink); line-height:1.42;
+    white-space:pre-line}
+  .state{font-size:11px; padding:6px 0 0; border-top:0; color:var(--muted)}
+  .state[hidden]{display:none}
+
+  /* ---- 短い注意書きと「作品について」 ---- */
+  /* 注意書きは常時1行分の帯として置き、操作列は1段に収める */
+  .foot{display:flex; flex-direction:column; align-items:stretch; gap:5px; flex:0 0 auto;
+    margin-top:6px; padding-top:6px; border-top:1px solid var(--line)}
+  .notice-short{margin:0; font-size:10px; line-height:1.35; color:#9fadbd}
+  .foot-btns{display:grid; grid-template-columns:repeat(4,1fr); gap:4px}
+  .foot-btns button{min-height:44px; min-width:44px; padding:6px 4px; font-size:11px;
+    background:#18222f; color:var(--ink); border:1px solid var(--line);
+    border-radius:8px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+  /* 全文とリンクはモーダルへ移す */
+  .panel > .standing, .panel > .links{display:none}
+
+  .reveal{top:auto; left:10px; bottom:calc(10px + var(--safe-b)); right:auto; min-height:44px}
+}
+/* 低い横向き画面では、通常時の高さを抑えて作品を見せる */
+@media(max-height:540px) and (max-width:1024px){
+  /* 画面が低いぶん高さを取り、横幅を使って2列に並べる */
+  body.sheet-normal .panel{--sheet-h:70dvh}
+  body.sheet-full   .panel{--sheet-h:92dvh}
+  .picks{grid-template-columns:1fr 1fr}
+  .themes{grid-template-columns:1fr 1fr}
+  .bulk{grid-template-columns:repeat(4,1fr)}
+  /* 横に余裕があるので、注意書き・状態・操作列を横並びにして縦を節約する */
+  .foot{flex-direction:row; align-items:center; gap:8px}
+  .notice-short{flex:1 1 auto; min-width:0}
+  .foot-btns{grid-template-columns:repeat(4,auto); flex:0 0 auto}
+  .state-short{white-space:normal}
+  .segmented button{flex:0 1 auto; min-width:44px}
+  .panel h2{margin-bottom:4px}
+  .hint{margin-bottom:4px}
+}
+
+/* ================= 「作品について」モーダル ================= */
+.modal{position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:16px}
+.modal[hidden]{display:none}
+.modal-back{position:absolute; inset:0; background:#03060acc; backdrop-filter:blur(3px)}
+.modal-box{position:relative; max-width:min(560px,100%); max-height:84dvh; overflow:auto;
+  background:#101924; border:1px solid var(--line); border-radius:14px;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px)); overscroll-behavior:contain}
+.modal-box h2{margin:0 0 10px; font-size:13px; letter-spacing:.08em; color:var(--muted)}
+.modal-box p{margin:0 0 12px; font-size:13px; line-height:1.7; color:var(--ink)}
+.modal-box .links{margin:0 0 14px}
+#aboutClose{min-height:44px; width:100%; padding:11px; font:inherit; font-size:14px;
+  background:#18222f; color:var(--ink); border:1px solid var(--line);
+  border-radius:10px; cursor:pointer}
+#aboutClose:hover{border-color:var(--sel)}
+
 /* 公開ページの補助 */
 .links { display:flex; flex-wrap:wrap; gap:.85rem; margin:.6rem 0 0; }
 .links a { color:#b9c4d6; font-size:.72rem; text-decoration:underline; text-underline-offset:3px; }
 .links a:hover, .links a:focus-visible { color:#fff; }
+@media(max-width:768px),(max-height:540px) and (max-width:1024px){ .modal-box .links a{font-size:13px; min-height:44px; display:inline-flex; align-items:center} }

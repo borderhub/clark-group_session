@@ -14,90 +14,131 @@
 <button type="button" id="reveal" class="reveal" aria-expanded="true" aria-controls="panel">操作を表示</button>
 
 <section id="panel" class="panel" aria-label="操作">
+
+  <!-- 画面幅768px以下でのみ表示するハンドル。タップで3段階を切り替える -->
+  <button type="button" id="grab" class="grab" aria-expanded="false" aria-controls="panel">
+    <span class="grab-bar" aria-hidden="true"></span>
+    <span class="grab-sum" id="grabSum">操作</span>
+    <span class="grab-arrow" id="grabArrow" aria-hidden="true">▲</span>
+  </button>
+
   <div class="panel-head">
     <p class="badge">輪郭場</p>
-    <div class="head-btns">
+    <div class="head-btns" id="headBtns">
       <button type="button" id="restore">輪郭を戻す</button>
       <button type="button" id="fs">全画面表示</button>
       <button type="button" id="hide" aria-controls="panel">表示を隠す</button>
     </div>
   </div>
 
-  <div class="rows">
-    <div class="row">
-      <h2>参照中</h2>
-      <dl id="refState" class="ref"></dl>
-    </div>
+  <!-- 画面幅768px以下でのみ表示するタブ -->
+  <div class="tabs" id="tabs" role="tablist" aria-label="操作の切り替え">
+    <button type="button" class="tab" id="tab-theme" data-tab="theme"
+            role="tab" aria-selected="true" aria-controls="tp-theme">テーマ</button>
+    <button type="button" class="tab" id="tab-material" data-tab="material"
+            role="tab" aria-selected="false" aria-controls="tp-material" tabindex="-1">資料</button>
+    <button type="button" class="tab" id="tab-transform" data-tab="transform"
+            role="tab" aria-selected="false" aria-controls="tp-transform" tabindex="-1">変容</button>
+  </div>
 
-    <div class="row">
-      <h2 id="lblTheme">会話テーマ</h2>
-      <p class="hint">公開済みダッシュボードに表示されているテーマです。選ぶと、作品の変わり方（色の比重・動きの速さ・ほつれ・粒子の振る舞い・余白の頻度）が変わります。描かれる輪郭は変わりません。</p>
-      <div class="themes" role="group" aria-labelledby="lblTheme" id="themes"></div>
-    </div>
+  <div class="rows" id="rows">
 
-    <div class="row">
-      <h2 id="lblPick">視覚資料を選ぶ</h2>
-      <p class="hint">選ぶと、描かれる輪郭・色・構図が変わります。作品の変わり方は変わりません。</p>
-      <div class="bulk">
-        <button type="button" data-bulk="all">すべて選ぶ</button>
-        <button type="button" data-bulk="none">すべて解除</button>
-        <button type="button" data-bulk="G">記録の範囲 G</button>
-        <button type="button" data-bulk="B">記録の範囲 B</button>
+    <div class="tabpanel" id="tp-theme" data-tab="theme" aria-labelledby="tab-theme">
+      <div class="row">
+        <h2>参照中</h2>
+        <dl id="refState" class="ref"></dl>
       </div>
-      <div class="picks" role="group" aria-labelledby="lblPick" id="picks"></div>
-      <p class="hint">G と B は、記録が行われた範囲の区別です。範囲どうしを比べるための表示ではありません。</p>
-    </div>
-
-    <div class="row narrow">
-      <h2 id="lblMode">表現モード</h2>
-      <div class="segmented" role="group" aria-labelledby="lblMode">
-        <button type="button" data-mode="contour" aria-pressed="true">輪郭</button>
-        <button type="button" data-mode="particle" aria-pressed="false">粒子</button>
-        <button type="button" data-mode="hybrid" aria-pressed="false">混成</button>
+      <div class="row">
+        <h2 id="lblTheme">会話テーマ</h2>
+        <p class="hint"><span class="wide-only">公開済みダッシュボードに表示されているテーマです。選ぶと、作品の変わり方（色の比重・動きの速さ・ほつれ・粒子の振る舞い・余白の頻度）が変わります。描かれる輪郭は変わりません。</span><span class="narrow-only">選ぶと作品の変わり方が変わります。輪郭は変わりません。</span></p>
+        <div class="themes" role="group" aria-labelledby="lblTheme" id="themes"></div>
       </div>
     </div>
 
-    <div class="row narrow">
-      <h2 id="lblSpeed">動きの速さ</h2>
-      <input type="range" id="speed" min="0" max="100" value="22" step="1"
-             aria-labelledby="lblSpeed" aria-valuetext="ゆっくり">
-    </div>
-
-    <div class="row narrow">
-      <h2 id="lblFray">ほつれの強さ</h2>
-      <input type="range" id="fray" min="0" max="100" value="32" step="1"
-             aria-labelledby="lblFray" aria-valuetext="弱い">
-    </div>
-
-    <div class="row narrow">
-      <h2 id="lblBeh">粒子の振る舞い</h2>
-      <div class="segmented" role="group" aria-labelledby="lblBeh">
-        <button type="button" data-behavior="follow" aria-pressed="false">沿う</button>
-        <button type="button" data-behavior="drift" aria-pressed="false">漂う</button>
-        <button type="button" data-behavior="dwell" aria-pressed="true">留まる</button>
+    <div class="tabpanel" id="tp-material" data-tab="material" aria-labelledby="tab-material">
+      <div class="row">
+        <h2 id="lblPick">視覚資料を選ぶ</h2>
+        <p class="hint"><span class="wide-only">選ぶと、描かれる輪郭・色・構図が変わります。作品の変わり方は変わりません。</span><span class="narrow-only">選ぶと輪郭・色・構図が変わります。</span></p>
+        <div class="bulk">
+          <button type="button" data-bulk="all">すべて選ぶ</button>
+          <button type="button" data-bulk="none">すべて解除</button>
+          <button type="button" data-bulk="G">記録の範囲 G</button>
+          <button type="button" data-bulk="B">記録の範囲 B</button>
+        </div>
+        <div class="picks" role="group" aria-labelledby="lblPick" id="picks"></div>
+        <p class="hint wide-only">G と B は、記録が行われた範囲の区別です。範囲どうしを比べるための表示ではありません。</p>
       </div>
     </div>
 
-    <div class="row narrow">
-      <h2 id="lblMat">素材の比重</h2>
-      <div class="segmented" role="group" aria-labelledby="lblMat">
-        <button type="button" data-material="word" aria-pressed="false">言葉</button>
-        <button type="button" data-material="line" aria-pressed="true">線</button>
-        <button type="button" data-material="color" aria-pressed="false">色</button>
+    <div class="tabpanel" id="tp-transform" data-tab="transform" aria-labelledby="tab-transform">
+      <div class="row narrow">
+        <h2 id="lblMode">表現モード</h2>
+        <div class="segmented" role="group" aria-labelledby="lblMode">
+          <button type="button" data-mode="contour" aria-pressed="true">輪郭</button>
+          <button type="button" data-mode="particle" aria-pressed="false">粒子</button>
+          <button type="button" data-mode="hybrid" aria-pressed="false">混成</button>
+        </div>
       </div>
+
+      <div class="row narrow">
+        <h2 id="lblSpeed">動きの速さ</h2>
+        <input type="range" id="speed" min="0" max="100" value="22" step="1"
+               aria-labelledby="lblSpeed" aria-valuetext="ゆっくり">
+      </div>
+
+      <div class="row narrow">
+        <h2 id="lblFray">ほつれの強さ</h2>
+        <input type="range" id="fray" min="0" max="100" value="32" step="1"
+               aria-labelledby="lblFray" aria-valuetext="弱い">
+      </div>
+
+      <div class="row narrow">
+        <h2 id="lblBeh">粒子の振る舞い</h2>
+        <div class="segmented" role="group" aria-labelledby="lblBeh">
+          <button type="button" data-behavior="follow" aria-pressed="false">沿う</button>
+          <button type="button" data-behavior="drift" aria-pressed="false">漂う</button>
+          <button type="button" data-behavior="dwell" aria-pressed="true">留まる</button>
+        </div>
+      </div>
+
+      <div class="row narrow">
+        <h2 id="lblMat">素材の比重</h2>
+        <div class="segmented" role="group" aria-labelledby="lblMat">
+          <button type="button" data-material="word" aria-pressed="false">言葉</button>
+          <button type="button" data-material="line" aria-pressed="true">線</button>
+          <button type="button" data-material="color" aria-pressed="false">色</button>
+        </div>
+      </div>
+
+      <div class="row narrow">
+        <h2 id="lblRel">線の重なり</h2>
+        <div class="segmented" role="group" aria-labelledby="lblRel">
+          <button type="button" data-relation="resonance" aria-pressed="false">響き合う</button>
+          <button type="button" data-relation="drift" aria-pressed="false">ずれる</button>
+          <button type="button" data-relation="hold" aria-pressed="true">ひかえる</button>
+        </div>
+      </div>
+
+      <!-- 768px以下では「輪郭を戻す」をこの位置へ移す（artwork.js が移動する） -->
+      <div class="row narrow" id="restoreSlot"></div>
     </div>
 
-    <div class="row narrow">
-      <h2 id="lblRel">線の重なり</h2>
-      <div class="segmented" role="group" aria-labelledby="lblRel">
-        <button type="button" data-relation="resonance" aria-pressed="false">響き合う</button>
-        <button type="button" data-relation="drift" aria-pressed="false">ずれる</button>
-        <button type="button" data-relation="hold" aria-pressed="true">ひかえる</button>
-      </div>
+  </div>
+
+  <!-- 768px以下の短い状態表示 -->
+  <p id="stateShort" class="state-short" aria-live="polite"></p>
+  <!-- 詳細状態。768px以下では「詳細」ボタンで開閉する -->
+  <p id="state" class="state" aria-live="polite"></p>
+
+  <div class="foot">
+    <p class="notice-short">変化や近接は、個人の関係・心理・因果・テーマと資料の対応を示しません。</p>
+    <div class="foot-btns">
+      <button type="button" id="detailBtn" aria-expanded="false" aria-controls="state">詳細</button>
+      <button type="button" id="aboutBtn" aria-haspopup="dialog">作品について</button>
     </div>
   </div>
 
-  <p id="state" class="state" aria-live="polite"></p>
+  <!-- 769px以上でのみ表示する全文 -->
   <p class="standing">
     この作品は、公開済みの会話テーマと視覚資料の構成を、同じ場に置き、色・線・動きとして翻訳する試作です。
     会話テーマは作品の変わり方を、視覚資料は描かれる輪郭・色・構図をそれぞれ決めます。
@@ -108,6 +149,26 @@
     <a href="../visual-materials/">視覚資料アーカイブ</a>
   </p>
 </section>
+
+<div id="about" class="modal" hidden>
+  <div class="modal-back" data-close="1"></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <h2 id="aboutTitle">作品について</h2>
+    <p>
+      この作品は、公開済みの会話テーマと視覚資料の構成を、同じ場に置き、色・線・動きとして翻訳する試作です。
+      会話テーマは作品の変わり方を、視覚資料は描かれる輪郭・色・構図をそれぞれ決めます。
+      画面に現れる近接や変化は、個人どうしの関係、心理状態、因果関係、テーマと資料の対応を示すものではありません。
+    </p>
+    <p>
+      G と B は、記録が行われた範囲の区別です。範囲どうしを比べるための表示ではありません。
+    </p>
+    <p class="links">
+      <a href="../dashboard/">会話テーマの記録</a>
+      <a href="../visual-materials/">視覚資料アーカイブ</a>
+    </p>
+    <button type="button" id="aboutClose" data-close="1">閉じる</button>
+  </div>
+</div>
 
 <script src="artwork_renderer.js"></script>
 <script src="artwork_relation_map.js"></script>

@@ -1065,7 +1065,9 @@ fsBtn.addEventListener('click', async () => {
   } catch (_) {}
 });
 document.addEventListener('fullscreenchange', () => {
-  fsBtn.textContent = document.fullscreenElement ? '全画面を終了' : '全画面表示';
+  fsBtn.textContent = MQ_MOBILE.matches
+    ? (document.fullscreenElement ? '全画面終了' : '全画面')
+    : (document.fullscreenElement ? '全画面を終了' : '全画面表示');
   resize();
 });
 addEventListener('keydown', e => {
@@ -1105,7 +1107,25 @@ function stageLabel() {
   return '変容へ移行中';
 }
 
+/* 768px以下の短い状態表示。数値・内部IDは出さない。 */
+const FRAY_S = { '弱い':'ほつれ弱', '中程度':'ほつれ中', '強い':'ほつれ強' };
+function shortLines() {
+  return [
+    `資料${state.sel.size}点・` + (state.theme === null ? 'テーマ未選択' : `テーマ：${state.theme}`),
+    `${MODE[state.mode]}／${lvl(state.speed)}／${FRAY_S[lvlF(state.fray)]}／粒子：${BEH[state.behavior]}`,
+  ];
+}
+const MQ_SHORT = matchMedia('(max-height:540px)');
+function syncShort() {
+  const [a, b] = shortLines();
+  const el = document.getElementById('stateShort');
+  if (el) el.textContent = MQ_SHORT.matches ? `${a}／${b}` : `${a}\n${b}`;
+  const g = document.getElementById('grabSum');
+  if (g) g.textContent = document.body.classList.contains('sheet-collapsed') ? `${a}／${b}` : '操作';
+}
+
 function syncText() {
+  syncShort();
   document.getElementById('state').textContent =
     `選択 ${state.sel.size}件／${MODE[state.mode]}／速さ：${lvl(state.speed)}／ほつれ：${lvlF(state.fray)}`
     + `／粒子：${BEH[state.behavior]}／素材：${MAT[state.material]}／重なり：${RELN[state.relation]}`
@@ -1157,6 +1177,185 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) stop(); else if (!RM()) start();
 });
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', () => apply(true));
+
+/* ================= 768px以下の操作パネル =================
+   下部シート（折りたたみ／通常／全展開）と3タブ。
+   シートの開閉では resize() を呼ばない。Canvas は全画面のまま描画を続け、
+   選択・段階・変容の状態はそのまま保たれる。 */
+const MQ_MOBILE = matchMedia('(max-width:768px),(max-height:540px) and (max-width:1024px)');
+const SHEET = ['sheet-collapsed', 'sheet-normal', 'sheet-full'];
+let sheetStep = 0;                                  // 0=折りたたみ 1=通常 2=全展開
+const grab = document.getElementById('grab');
+const grabArrow = document.getElementById('grabArrow');
+const tabsEl = document.getElementById('tabs');
+const tabBtns = [...tabsEl.querySelectorAll('.tab')];
+const panelEl = document.getElementById('panel');
+const restoreSlot = document.getElementById('restoreSlot');
+const headBtns = document.getElementById('headBtns');
+const stateEl = document.getElementById('state');
+const detailBtn = document.getElementById('detailBtn');
+let activeTab = 'theme';
+
+function setSheet(step) {
+  sheetStep = Math.max(0, Math.min(2, step));
+  document.body.classList.remove(...SHEET);
+  document.body.classList.add(SHEET[sheetStep]);
+  panelEl.style.height = '';                        // ドラッグ中の直接指定を解除
+  grab.setAttribute('aria-expanded', String(sheetStep > 0));
+  if (grabArrow) grabArrow.textContent = sheetStep === 2 ? '▲' : '▲';
+  syncShort();
+}
+
+/* ハンドル：タップで3段階を巡回、ドラッグで高さに応じて吸着、キーボードでも操作できる */
+(function wireGrab() {
+  let dragging = false, startY = 0, startH = 0, moved = 0, swallowClick = false;
+  const vh = () => (visualViewport && visualViewport.height) || innerHeight;
+
+  /* 段階の切り替えは click で行う。タップ・Enter・Space・スクリーンリーダーの
+     いずれからも同じ経路になる。ドラッグで確定したときだけ click を読み飛ばす。 */
+  grab.addEventListener('click', () => {
+    if (swallowClick) { swallowClick = false; return; }
+    if (!MQ_MOBILE.matches) return;
+    setSheet((sheetStep + 1) % 3);
+  });
+
+  grab.addEventListener('pointerdown', e => {
+    if (!MQ_MOBILE.matches || e.button || e.pointerType === 'mouse') return;
+    dragging = true; moved = 0; startY = e.clientY;
+    startH = panelEl.getBoundingClientRect().height;
+    try { grab.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  grab.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const dy = startY - e.clientY;
+    moved = Math.max(moved, Math.abs(dy));
+    if (moved < 8) return;
+    e.preventDefault();
+    document.body.classList.add('sheet-dragging');
+    panelEl.style.height = Math.max(64, Math.min(vh() * 0.88, startH + dy)) + 'px';
+  });
+  const end = e => {
+    if (!dragging) return;
+    dragging = false;
+    document.body.classList.remove('sheet-dragging');
+    try { grab.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (moved < 8) return;                                      // click 側で巡回させる
+    swallowClick = true;
+    const r = panelEl.getBoundingClientRect().height / vh();    // 近い段階へ吸着
+    setSheet(r < 0.30 ? 0 : r < 0.65 ? 1 : 2);
+  };
+  grab.addEventListener('pointerup', end);
+  grab.addEventListener('pointercancel', end);
+  grab.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp')        { e.preventDefault(); setSheet(sheetStep + 1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); setSheet(sheetStep - 1); }
+  });
+})();
+
+/* タブ。選択状態も描画状態も切り替えでは変えない（表示の出し分けだけ） */
+function setTab(name) {
+  activeTab = name;
+  tabBtns.forEach(b => {
+    const on = b.dataset.tab === name;
+    b.setAttribute('aria-selected', String(on));
+    b.tabIndex = on ? 0 : -1;
+  });
+  syncPanels();
+}
+function syncPanels() {
+  const mobile = MQ_MOBILE.matches;
+  document.querySelectorAll('.tabpanel').forEach(tp => {
+    if (mobile) {
+      tp.setAttribute('role', 'tabpanel');
+      tp.tabIndex = 0;
+      tp.hidden = tp.dataset.tab !== activeTab;
+    } else {
+      tp.removeAttribute('role'); tp.removeAttribute('tabindex'); tp.hidden = false;
+    }
+  });
+}
+tabBtns.forEach((b, i) => {
+  b.addEventListener('click', () => setTab(b.dataset.tab));
+  b.addEventListener('keydown', e => {
+    let j = -1;
+    if (e.key === 'ArrowRight') j = (i + 1) % tabBtns.length;
+    else if (e.key === 'ArrowLeft') j = (i + tabBtns.length - 1) % tabBtns.length;
+    else if (e.key === 'Home') j = 0;
+    else if (e.key === 'End') j = tabBtns.length - 1;
+    if (j < 0) return;
+    e.preventDefault(); tabBtns[j].focus(); setTab(tabBtns[j].dataset.tab);
+  });
+});
+
+/* 幅に応じて「輪郭を戻す」の置き場所と詳細行の扱いを切り替える */
+function syncLayout() {
+  const mobile = MQ_MOBILE.matches;
+  const restore = document.getElementById('restore');
+  const footBtns = document.querySelector('.foot-btns');
+  const fsB = document.getElementById('fs'), hideB = document.getElementById('hide');
+  if (mobile) {
+    if (restore.parentElement !== restoreSlot) restoreSlot.append(restore);
+    /* 全画面・表示を隠すは下部の操作列へ移す。パネル上部を操作に使うため */
+    if (fsB.parentElement !== footBtns) footBtns.append(fsB, hideB);
+    fsB.textContent = document.fullscreenElement ? '全画面終了' : '全画面';
+    hideB.textContent = '隠す';
+    restoreSlot.style.display = 'block';
+    stateEl.hidden = detailBtn.getAttribute('aria-expanded') !== 'true';
+    if (!SHEET.some(c => document.body.classList.contains(c))) setSheet(0);
+  } else {
+    if (restore.parentElement !== headBtns) headBtns.prepend(restore);
+    if (fsB.parentElement !== headBtns) headBtns.append(fsB, hideB);
+    fsB.textContent = document.fullscreenElement ? '全画面を終了' : '全画面表示';
+    hideB.textContent = '表示を隠す';
+    restoreSlot.style.display = '';
+    document.body.classList.remove(...SHEET);
+    panelEl.style.height = '';
+    stateEl.hidden = false;
+  }
+  syncPanels();
+  syncShort();
+}
+detailBtn.addEventListener('click', () => {
+  const open = detailBtn.getAttribute('aria-expanded') === 'true';
+  detailBtn.setAttribute('aria-expanded', String(!open));
+  stateEl.hidden = open;
+});
+MQ_MOBILE.addEventListener?.('change', syncLayout);
+
+/* ---- 「作品について」モーダル ---- */
+(function wireAbout() {
+  const modal = document.getElementById('about');
+  const box = modal.querySelector('.modal-box');
+  const openBtn = document.getElementById('aboutBtn');
+  let opener = null;
+  const focusables = () => [...box.querySelectorAll(
+    'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+    .filter(el => el.offsetParent !== null);
+  function open() {
+    opener = document.activeElement;
+    modal.hidden = false;
+    (focusables()[0] || box).focus();
+  }
+  function close() {
+    modal.hidden = true;
+    if (opener && document.contains(opener)) opener.focus();
+    opener = null;
+  }
+  openBtn.addEventListener('click', open);
+  modal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', close));
+  modal.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); return; }
+    if (e.key !== 'Tab') return;
+    const f = focusables();
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+})();
+
+syncLayout();
 
 SRC.forEach(s => { s.target = 0; s.alpha = 0; });     // 初回は必ず A 段階から始める
 resize();
