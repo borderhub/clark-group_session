@@ -1,0 +1,83 @@
+:root{--ink:#e9eef5;--muted:#93a1b3;--line:#2b3543;--panel:#0f1620e6;--sel:#4a8fc4;
+  --side-w:360px}   /* サイドバーの幅。artwork.js が作品の中心位置に反映する */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:#070a0e;color:var(--ink);overflow:hidden;
+  font:14px/1.6 "Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif}
+#stage{position:fixed;inset:0;width:100dvw;height:100dvh;display:block;background:#070a0e}
+
+.reveal{position:fixed;top:14px;right:14px;z-index:30;display:none;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:10px;padding:9px 14px;font:inherit;cursor:pointer;backdrop-filter:blur(6px)}
+body.ui-hidden .reveal{display:block}
+body.ui-hidden .panel{display:none}
+
+.panel{position:fixed;top:14px;right:14px;bottom:14px;z-index:20;width:var(--side-w);
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:12px 16px 14px;backdrop-filter:blur(8px);opacity:.72;transition:opacity .25s ease;
+  display:flex;flex-direction:column}
+.panel:hover,.panel:focus-within{opacity:1}
+.panel-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;flex:0 0 auto}
+.badge{margin:0;font-size:10px;letter-spacing:.12em;color:#8aa2b8;
+  border:1px solid var(--line);border-radius:99px;padding:3px 9px}
+.head-btns{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
+.rows{display:flex;flex-direction:column;gap:14px;align-items:stretch;
+  overflow:auto;min-height:0;flex:1 1 auto;padding-right:2px}
+.row{flex:0 0 auto;min-width:0}
+.row.narrow{flex:0 0 auto}
+.panel h2{font-size:10px;letter-spacing:.1em;color:var(--muted);margin:0 0 6px;font-weight:700}
+.hint{margin:0 0 7px;font-size:10.5px;line-height:1.5;color:#7f8b9b}
+.ref{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0;font-size:12px}
+.ref dt{color:var(--muted)}
+.ref dd{margin:0}
+.themes{display:grid;grid-template-columns:1fr;gap:4px;max-height:184px;overflow:auto}
+.themes button{font:inherit;font-size:12px;text-align:left;background:#18222f;color:var(--ink);
+  border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.themes button:hover{border-color:var(--sel)}
+.themes button[aria-pressed=true]{background:var(--sel);border-color:var(--sel);color:#fff;font-weight:700}
+.themes button[aria-pressed=true]::before{content:"● ";font-size:9px}
+button{font:inherit}
+.bulk{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:7px}
+.bulk button,.head-btns button,.segmented button{background:#18222f;color:var(--ink);
+  border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px}
+.bulk button:hover,.head-btns button:hover,.segmented button:hover{border-color:var(--sel)}
+.segmented{display:flex;gap:5px;flex-wrap:wrap}
+.segmented button{padding:7px 13px;font-size:13px}
+.segmented button[aria-pressed=true]{background:var(--sel);border-color:var(--sel);color:#fff;font-weight:700}
+.segmented button[aria-pressed=true]::before{content:"● ";font-size:9px}
+.picks{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.pick{display:flex;align-items:center;gap:7px;background:#141d28;border:1px solid var(--line);
+  border-radius:8px;padding:6px 9px;cursor:pointer;font-size:12.5px}
+.pick:hover{border-color:var(--sel)}
+.pick input{accent-color:var(--sel);width:15px;height:15px;margin:0;cursor:pointer}
+.pick .sw{width:9px;height:9px;border-radius:99px;flex:0 0 auto}
+.pick:has(input:checked){background:#1b2a3a;border-color:#37556f}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;
+  background:transparent;cursor:pointer;margin:0;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:99px;background:#26303d}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+  border-radius:99px;background:var(--sel);border:2px solid #0f1620;margin-top:-6px}
+input[type=range]::-moz-range-track{height:4px;border-radius:99px;background:#26303d}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:99px;
+  background:var(--sel);border:2px solid #0f1620}
+.state{margin:0;padding:8px 0 0;font-size:11.5px;color:var(--muted);flex:0 0 auto;
+  border-top:1px solid var(--line)}   /* スクロール域との境界を示す */
+/* 常時表示。サイドバーでは縦に長くなるため、高さを抑えて内部スクロールにする */
+.standing{margin:7px 0 0;font-size:10.5px;line-height:1.55;color:#9fadbd;
+  border-top:1px solid var(--line);padding-top:8px;flex:0 0 auto;
+  max-height:170px;overflow:auto}
+:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+@media(max-width:860px){
+  /* 狭い画面ではサイドバーが画面を占有するため、下部シートに戻す */
+  .panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;padding:10px 12px 12px;max-height:58dvh}
+  .rows{gap:12px}
+  .picks{grid-template-columns:repeat(2,1fr)}
+  .standing{font-size:10.5px;max-height:110px}
+  .reveal{top:auto;left:8px;bottom:8px;right:auto}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* 公開ページの補助 */
+.links { display:flex; flex-wrap:wrap; gap:.85rem; margin:.6rem 0 0; }
+.links a { color:#b9c4d6; font-size:.72rem; text-decoration:underline; text-underline-offset:3px; }
+.links a:hover, .links a:focus-visible { color:#fff; }
